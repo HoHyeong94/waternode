@@ -1,0 +1,25 @@
+{
+  "name": "waternode",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@design-express/node-scripts": "0.0.15"
+  },
+  "scripts": {
+    "start": "node-scripts start",
+    "build": "node-scripts build",
+    "pack": "node-scripts pack",
+    "publish": "node-scripts publish",
+    "docs": "node-scripts docs"
+  },
+  "eslintConfig": {
+    "extends": "standard"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "eslint": "^7.32.0",
+    "rollup": "^2.56.3"
+  }
+}
