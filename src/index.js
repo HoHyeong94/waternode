@@ -338,22 +338,32 @@ WsGraphView.prototype.onExecute = function () {
   let yAxios = [];
   let pts = [];
   let yData = data[target];
+  let re = new RegExp(/,/g)
+  for (let i in yData) {
+    if(!(typeof yData[i] === "string")) continue;
+    yData[i] = parseFloat(yData[i].replace(re, ''));
+  }
   let yMax = Math.max.apply(null, yData)
   let yMin = Math.min.apply(null, yData)
   let scale = 1000;
   let init = {x:-500, y:500, z:-1000}
+  const xAxiosLength = data.obsrdtmnt.length;
+  let yCali = xAxiosLength / (yMax - yMin)
   let _lineSeg = [];
   let _lineXaxios = [];
   let _lineYaxios = [];
+  console.log("---yData---")
+  console.log(yData);
+  console.log(yMax, yMin)
 
-  yAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3(init.x * scale, (yMax-yMin + init.y)*scale, init.z * scale)]);
+  yAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3(init.x * scale, (((yMax - yMin) * yCali) + init.y) * scale, init.z * scale)]);
 
   for(let i = 0; i < data.obsrdtmnt.length; i++) {
     xAxios.push(new THREE.Vector3((i + init.x)*scale, init.y * scale, init.z * scale));
-    pts.push(new THREE.Vector3((i + init.x)*scale, ((parseInt(yData[i])-yMin) + init.y)*scale, init.z * scale));
+    pts.push(new THREE.Vector3((i + init.x)*scale, (((yData[i] - yMin) * yCali) + init.y) * scale, init.z * scale));
   }
 
-  if (pts.length !== 0) {
+  
     pts.reduce((re, cu, idx) => {
       _lineSeg.push(re, cu);
       return cu;
@@ -366,7 +376,7 @@ WsGraphView.prototype.onExecute = function () {
       _lineXaxios.push(re, cu);
       return cu;
     })
-  }
+  
   
   let _result = LineSegMesh(_lineSeg, material);
   let _resultX = LineSegMesh(_lineXaxios, material);
