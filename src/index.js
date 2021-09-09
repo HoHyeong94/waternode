@@ -24,7 +24,6 @@ export default new Promise((r, j) => gloader.load('/fonts/korean.json', function
         console.log("loaded");
         r()
 }))
-const defaultMat = new THREE.MeshBasicMaterial({ color: 0xffffff })
 function WsData() {
   this.addInput("댐코드", 0);
   this.addInput("조회시작일", 0);
@@ -324,6 +323,7 @@ function WsGraphView() {
   this.addInput("WsData", 0);
   this.addInput("Target", 0);
   this.addInput("material", 0);
+  this.addInput("TextMaterial", 0);
   this.addOutput("Graph", 0);
 }
 
@@ -333,6 +333,7 @@ WsGraphView.prototype.onExecute = function () {
   let data = this.getInputData(0);
   let target = this.getInputData(1) ?? "totdcwtrqy"
   let material = this.getInputData(2) ?? undefined;
+  let textMat = this.getInputData(3) ?? undefined;
   let graphSet = new THREE.Group();
   let xAxios = [];
   let yAxios = [];
@@ -435,10 +436,12 @@ WsGraphView.prototype.onExecute = function () {
     align: "left",
   })
 
-  graphSet.add(LabelInsert(textList, defaultMat));
+  graphSet.add(LabelInsert(textList, textMat));
   graphSet.add(_result)
   graphSet.add(_resultX)
   graphSet.add(_resultY);
+
+  graphSet.name = "graph"
 
   this.setOutputData(0, graphSet)
 }
@@ -461,7 +464,7 @@ setWorldGraph.prototype.onExecute = function () {
 
   graph.scale.set(scale, scale, scale)
   graph.position.set(position.x, position.y, position.z)
-  graph.lookAt(0,0,0)
+  // graph.lookAt(0,0,0)
   
   this.setOutputData(0, graph);
 }
