@@ -158,7 +158,7 @@ GLTFLoaderNode.prototype.onExecute = async function () {
     });
   });
   scene2.scale.multiplyScalar(100000);
-  scene2.position.set(0, -650, -600);
+  scene2.position.set(50, -650, -600);
   this.setOutputData(0, scene2);
 };
 
@@ -324,6 +324,7 @@ function WsGraphView() {
   this.addInput("WsData", 0);
   this.addInput("Target", 0);
   this.addInput("material", 0);
+  this.addOutput("Graph", 0);
 }
 
 WsGraphView.title = "WsGraphView";
@@ -349,7 +350,7 @@ WsGraphView.prototype.onExecute = function () {
   let yMax = Math.max.apply(null, yData)
   let yMin = Math.min.apply(null, yData)
   let scale = 1000;
-  let init = {x:-500, y:500, z:-1000}
+  let init = {x:0, y:0, z:0}
   const xAxiosLength = data.obsrdtmnt.length;
   let yCali = xAxiosLength / (yMax - yMin)
   let _lineSeg = [];
@@ -439,11 +440,30 @@ WsGraphView.prototype.onExecute = function () {
   graphSet.add(_resultX)
   graphSet.add(_resultY);
 
-  sceneAdder({
-    layer: 0,
-    mesh: graphSet,
-    meta: "graph"
-  })
+  this.setOutputData(0, graphSet)
 }
 
 LiteGraph.registerNodeType("test/WsGraphView", WsGraphView);
+
+function setWorldGraph() {
+  this.addInput("Graph", 0);
+  this.addInput("position", 0);
+  this.addInput("scale", 0);
+  this.addOutput("Graph", 0);
+}
+
+setWorldGraph.title = "setWorldGraph";
+
+setWorldGraph.prototype.onExecute = function () {
+  let graph = this.getInputData(0) ?? null;
+  let position = this.getInputData(1) ?? {x:0, y:0, z:0};
+  let scale = this.getInputData(2) ?? 1;
+
+  graph.scale.set(scale, scale, scale)
+  graph.position.set(position.x, position.y, position.z)
+  graph.lookAt(0,0,0)
+  
+  this.setOutputData(0, graph);
+}
+
+LiteGraph.registerNodeType("test/setWorldGraph", setWorldGraph);
