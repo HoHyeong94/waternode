@@ -92,7 +92,7 @@ WsData.prototype.onExecute = async function () {
   let items = response.data.response.body.items.item;
 
 
-  if (stct > edct ) {
+  if (stct > edct || stct < 0 || edct > 24) {
     for (let i in items) {
       wsData.inflowqy.push(items[i].inflowqy)
       wsData.lowlevel.push(items[i].lowlevel)
@@ -358,6 +358,8 @@ WsGraphView.prototype.onExecute = function () {
   yAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3(init.x * scale, (((yMax - yMin) * yCali) + init.y) * scale, init.z * scale)]);
   xAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3((xAxiosLength + init.x) * scale, init.y * scale, init.z * scale)]);
 
+  let backgroudMeshPos = [((init.x * scale) + ((xAxiosLength + init.x) * scale))/2, ((init.y * scale) + ( (((yMax - yMin) * yCali) + init.y) * scale)) / 2,  init.z * scale]
+
   for(let i = 0; i < xAxiosLength + 1; i++) {
     pts.push(new THREE.Vector3((i + init.x) *scale, (((yData[Math.round((data.obsrdtmnt.length / xAxiosLength) * i)] - yMin) * yCali) + init.y) * scale, init.z * scale));
   }
@@ -431,10 +433,22 @@ WsGraphView.prototype.onExecute = function () {
     align: "left",
   })
 
+  const backgroundMat = new THREE.MeshLambertMaterial({
+    color:0xffffff,
+    transparent: true,
+    opacity: 0.7,
+    roughness:0.8,
+    metalness:1,
+    side: THREE.DoubleSide
+    });
+  let backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(200 * scale, 225 * scale), backgroundMat);
+  backgroundMesh.position.set(backgroudMeshPos[0], backgroudMeshPos[1], backgroudMeshPos[2] - 100);
+
   graphSet.add(LabelInsert(textList, textMat));
   graphSet.add(_result)
   graphSet.add(_resultX)
   graphSet.add(_resultY);
+  graphSet.add(backgroundMesh)
 
   graphSet.userData = {
     key: targetData[target],
