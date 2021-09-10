@@ -436,6 +436,12 @@ WsGraphView.prototype.onExecute = function () {
   graphSet.add(_resultX)
   graphSet.add(_resultY);
 
+  graphSet.userData = {
+    key: targetData[target],
+    part: "수자원공사",
+    name: "graph"
+  }
+
   graphSet.name = "graph"
 
   this.setOutputData(0, graphSet)
