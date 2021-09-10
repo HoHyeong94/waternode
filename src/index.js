@@ -30,6 +30,8 @@ function WsData() {
   this.addInput("조회종료일", 0);
   this.addInput("줄수", 0);
   this.addInput("페이지번호", 0);
+  this.addInput("조회시작시간", 0);
+  this.addInput("조회종료시간", 0);
   // this.addOutput("일시", 0);
   // this.addOutput("댐수위", 0);
   // this.addOutput("강우량", 0);
@@ -50,6 +52,11 @@ WsData.prototype.onExecute = async function () {
   const eddt = this.getInputData(2) ?? "2020-09-02";
   const numOfRows = this.getInputData(3) ?? "144";
   const pageNo = this.getInputData(4) ?? "undefined";
+  const stct = this.getInputData(5) ?? 0;
+  const edct = this.getInputData(6) ?? 24;
+
+  // const stctIndex = stct * 6;
+  // const edctIndex = edct * 6;
 
   let wsData = {
     obsrdtmnt: [],
@@ -81,18 +88,33 @@ WsData.prototype.onExecute = async function () {
   let response = await axios(baseURL + queryParams, {
     method: "GET",
   });
-  // console.log(data.response.body.item);
+
   let items = response.data.response.body.items.item;
-  console.log(items)
-  for (let i in items) {
-    wsData.inflowqy.push(items[i].inflowqy)
-    wsData.lowlevel.push(items[i].lowlevel)
-    wsData.obsrdtmnt.push(items[i].obsrdtmnt)
-    wsData.rf.push(items[i].rf)
-    wsData.rsvwtqy.push(items[i].rsvwtqy)
-    wsData.rsvwtrt.push(items[i].rsvwtrt)
-    wsData.totdcwtrqy.push(items[i].totdcwtrqy)
+
+
+  if (stct > edct ) {
+    for (let i in items) {
+      wsData.inflowqy.push(items[i].inflowqy)
+      wsData.lowlevel.push(items[i].lowlevel)
+      wsData.obsrdtmnt.push(items[i].obsrdtmnt)
+      wsData.rf.push(items[i].rf)
+      wsData.rsvwtqy.push(items[i].rsvwtqy)
+      wsData.rsvwtrt.push(items[i].rsvwtrt)
+      wsData.totdcwtrqy.push(items[i].totdcwtrqy)
+    }
+
+  } else {
+    for (let i = stct * 6; i < edct * 6 ; i++) {
+      wsData.inflowqy.push(items[i].inflowqy)
+      wsData.lowlevel.push(items[i].lowlevel)
+      wsData.obsrdtmnt.push(items[i].obsrdtmnt)
+      wsData.rf.push(items[i].rf)
+      wsData.rsvwtqy.push(items[i].rsvwtqy)
+      wsData.rsvwtrt.push(items[i].rsvwtrt)
+      wsData.totdcwtrqy.push(items[i].totdcwtrqy)
+    }
   }
+
   // console.log("-----data-----");
   // console.log(data)
 
@@ -108,12 +130,6 @@ function GLTFLoaderNode() {
   this.addOutput("model", 0);
 }
 
-// const loader = new GLTFLoader()
-//   .setDRACOLoader(new DRACOLoader().setDecoderPath("../../assets/wasm/"))
-//   .setKTX2Loader(new KTX2Loader().setTranscoderPath("../../assets/wasm/"))
-//   .setMeshoptDecoder(MeshoptDecoder);
-// const loader = new GLTFLoader();
-
 const loader = new GLTFLoader()
   .setDRACOLoader(new DRACOLoader().setDecoderPath("../../assets/wasm/"))
   .setKTX2Loader(new KTX2Loader().setTranscoderPath("../../assets/wasm/"))
@@ -123,7 +139,7 @@ GLTFLoaderNode.prototype.onExecute = async function () {
   let url = this.getInputData(0);
 
   let scene2 = await new Promise((resolve) => {
-    loader.load("../../model/monticello_dam/scene.gltf", (gltf) => {
+    loader.load(url, (gltf) => {
       let scene = gltf.scene || gltf.scenes[0];
       if (!scene) {
         throw new Error(
@@ -131,28 +147,6 @@ GLTFLoaderNode.prototype.onExecute = async function () {
             " it may contain individual 3D resources."
         );
       }
-      // sceneAdder({
-      //   layer: 0,
-      //   mesh: scene,
-      //   graphicType: 0,
-      // });
-
-      // const light = new THREE.AmbientLight(0x404040, 0.2); // soft white light
-      // sceneAdder({
-      //   layer: 0,
-      //   mesh: light,
-      //   graphicType: 0,
-      // });
-
-      // const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
-      // sceneAdder({
-      //   layer: 0,
-      //   mesh: hemiLight,
-      //   graphicType: 0,
-      // });
-
-      // scene.position.set(0, -650, -600);
-      // scene.scale.multiplyScalar(100000);
       resolve(scene);
     });
   });
@@ -352,7 +346,8 @@ WsGraphView.prototype.onExecute = function () {
   let yMin = Math.min.apply(null, yData)
   let scale = 1000;
   let init = {x:0, y:0, z:0}
-  const xAxiosLength = data.obsrdtmnt.length;
+  // const xAxiosLength = data.obsrdtmnt.length;
+  const xAxiosLength = 144;
   let yCali = xAxiosLength / (yMax - yMin)
   let _lineSeg = [];
   let _lineXaxios = [];
@@ -361,22 +356,22 @@ WsGraphView.prototype.onExecute = function () {
   let _yMarkLine = [];
 
   yAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3(init.x * scale, (((yMax - yMin) * yCali) + init.y) * scale, init.z * scale)]);
+  xAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3((xAxiosLength + init.x) * scale, init.y * scale, init.z * scale)]);
 
-  for(let i = 0; i < data.obsrdtmnt.length + 1; i++) {
-    xAxios.push(new THREE.Vector3((i + init.x)*scale, init.y * scale, init.z * scale));
-    pts.push(new THREE.Vector3((i + init.x)*scale, (((yData[i] - yMin) * yCali) + init.y) * scale, init.z * scale));
+  for(let i = 0; i < xAxiosLength + 1; i++) {
+    pts.push(new THREE.Vector3((i + init.x) *scale, (((yData[i] - yMin) * yCali) + init.y) * scale, init.z * scale));
   }
 
   
-  pts.reduce((re, cu, idx) => {
+  pts.reduce((re, cu) => {
     _lineSeg.push(re, cu);
     return cu;
   });
-  yAxios.reduce((re, cu, idx) => {
+  yAxios.reduce((re, cu) => {
     _lineYaxios.push(re, cu);
     return cu;
   });
-  xAxios.reduce((re, cu, idx) => {
+  xAxios.reduce((re, cu) => {
     _lineXaxios.push(re, cu);
     return cu;
   });
@@ -409,7 +404,7 @@ WsGraphView.prototype.onExecute = function () {
     graphSet.add(_resultYmark);
 
     if (!(i === 0)) {
-      let Xtext = data.obsrdtmnt[(xAxiosLength / 6) * i - 1].slice(6)
+      let Xtext = data.obsrdtmnt[Math.round((data.obsrdtmnt.length / 6)) * i - 1].slice(6)
       let Xanchor = [(xAxiosLength / 6 * i + init.x) * scale, (init.y- (scale/200)) * scale, init.z * scale ]
       xMarkLine.push(new THREE.Vector3((xAxiosLength / 6 * i + init.x) * scale, (init.y) * scale, init.z * scale), new THREE.Vector3((xAxiosLength / 6 * i + init.x) * scale, (init.y- (scale/200)) * scale, init.z * scale))
       xMarkLine.reduce((re, cu, idx) => {
