@@ -359,7 +359,7 @@ WsGraphView.prototype.onExecute = function () {
   xAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3((xAxiosLength + init.x) * scale, init.y * scale, init.z * scale)]);
 
   for(let i = 0; i < xAxiosLength + 1; i++) {
-    pts.push(new THREE.Vector3((i + init.x) *scale, (((yData[i] - yMin) * yCali) + init.y) * scale, init.z * scale));
+    pts.push(new THREE.Vector3((i + init.x) *scale, (((yData[Math.round((data.obsrdtmnt.length / xAxiosLength) * i)] - yMin) * yCali) + init.y) * scale, init.z * scale));
   }
 
   
