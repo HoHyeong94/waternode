@@ -244,7 +244,7 @@ WaterNode.prototype.onExecute = function () {
     {
       textureWidth: 512,
       textureHeight: 512,
-      waterNormals: new THREE.TextureLoader().load('../../textures/waternormals.jpg', function (texture) {
+      waterNormals: new THREE.TextureLoader().load('https://x.nexivil.com/media/public/waternormals.jpg', function (texture) {
 
         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
 
