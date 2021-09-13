@@ -105,6 +105,7 @@ WsData.prototype.onExecute = async function () {
 
   } else {
     for (let i = stct * 6; i < edct * 6 ; i++) {
+      if (!(items[i])) continue;
       wsData.inflowqy.push(items[i].inflowqy)
       wsData.lowlevel.push(items[i].lowlevel)
       wsData.obsrdtmnt.push(items[i].obsrdtmnt)
@@ -117,7 +118,7 @@ WsData.prototype.onExecute = async function () {
 
   // console.log("-----data-----");
   // console.log(data)
-
+  console.log(wsData);
   this.setOutputData(0, wsData);
 };
 
@@ -345,7 +346,7 @@ WsGraphView.prototype.onExecute = function () {
   let yMax = Math.max.apply(null, yData)
   let yMin = Math.min.apply(null, yData)
   let scale = 1000;
-  let init = {x:0, y:0, z:0}
+  // let init = {x:0, y:0, z:0}
   // const xAxiosLength = data.obsrdtmnt.length;
   const xAxiosLength = 144;
   let yCali = xAxiosLength / (yMax - yMin)
@@ -355,13 +356,13 @@ WsGraphView.prototype.onExecute = function () {
   let _xMarkLine = [];
   let _yMarkLine = [];
 
-  yAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3(init.x * scale, (((yMax - yMin) * yCali) + init.y) * scale, init.z * scale)]);
-  xAxios.push(...[new THREE.Vector3(init.x * scale, init.y * scale, init.z * scale), new THREE.Vector3((xAxiosLength + init.x) * scale, init.y * scale, init.z * scale)]);
+  yAxios.push(...[new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, (((yMax - yMin) * yCali)) * scale, 0)]);
+  xAxios.push(...[new THREE.Vector3(0, 0, 0), new THREE.Vector3((xAxiosLength) * scale, 0, 0)]);
 
-  let backgroudMeshPos = [((init.x * scale) + ((xAxiosLength + init.x) * scale))/2, ((init.y * scale) + ( (((yMax - yMin) * yCali) + init.y) * scale)) / 2,  init.z * scale]
+  let backgroudMeshPos = [(xAxiosLength * scale) / 2, ((yMax - yMin) * yCali * scale) / 2, 0];
 
   for(let i = 0; i < xAxiosLength + 1; i++) {
-    pts.push(new THREE.Vector3((i + init.x) *scale, (((yData[Math.round((data.obsrdtmnt.length / xAxiosLength) * i)] - yMin) * yCali) + init.y) * scale, init.z * scale));
+    pts.push(new THREE.Vector3(i * scale, (((yData[Math.round((data.obsrdtmnt.length / xAxiosLength) * i)] - yMin) * yCali)) * scale, 0));
   }
 
   
@@ -387,7 +388,7 @@ WsGraphView.prototype.onExecute = function () {
     let xMarkLine = [];
     let yMarkLine = [];
     let Ytext = (yMin + ((yMax - yMin) / 6) * i).toFixed(2);
-    let Yanchor = [(init.x - (scale/200)) * scale, ( (((yMax - yMin) * yCali) / 6) * i + init.y) * scale, init.z * scale] 
+    let Yanchor = [-(scale / 200) * scale, (((yMax - yMin) * yCali) / 6) * i * scale, 0]; 
     textList.push({
         text: Ytext.toString(),
         anchor: Yanchor,
@@ -396,7 +397,7 @@ WsGraphView.prototype.onExecute = function () {
         align: "right",
     })
 
-    yMarkLine.push(new THREE.Vector3((init.x) * scale, ( (((yMax - yMin) * yCali) / 6) * i + init.y) * scale, init.z * scale), new THREE.Vector3((init.x - (scale/200)) * scale, ( (((yMax - yMin) * yCali) / 6) * i + init.y) * scale, init.z * scale) )
+    yMarkLine.push(new THREE.Vector3(0, ( (((yMax - yMin) * yCali) / 6) * i ) * scale, 0), new THREE.Vector3(-(scale/200) * scale, ((((yMax - yMin) * yCali) / 6) * i) * scale, 0) )
     yMarkLine.reduce((re, cu, idx) => {
       _yMarkLine.push(re, cu);
       return cu;
@@ -407,8 +408,8 @@ WsGraphView.prototype.onExecute = function () {
 
     if (!(i === 0)) {
       let Xtext = data.obsrdtmnt[Math.round((data.obsrdtmnt.length / 6)) * i - 1].slice(6)
-      let Xanchor = [(xAxiosLength / 6 * i + init.x) * scale, (init.y- (scale/200)) * scale, init.z * scale ]
-      xMarkLine.push(new THREE.Vector3((xAxiosLength / 6 * i + init.x) * scale, (init.y) * scale, init.z * scale), new THREE.Vector3((xAxiosLength / 6 * i + init.x) * scale, (init.y- (scale/200)) * scale, init.z * scale))
+      let Xanchor = [(xAxiosLength / 6 * i) * scale, -(scale/200) * scale, 0]
+      xMarkLine.push(new THREE.Vector3((xAxiosLength / 6 * i) * scale, 0, 0), new THREE.Vector3((xAxiosLength / 6 * i) * scale, - (scale/200) * scale, 0))
       xMarkLine.reduce((re, cu, idx) => {
         _xMarkLine.push(re, cu);
         return cu;
@@ -427,7 +428,7 @@ WsGraphView.prototype.onExecute = function () {
 
   textList.push({
     text: `${data.obsrdtmnt[0].slice(0,5)} 댐 ${targetData[target]}`,
-    anchor: [(init.x - (scale/200)) * scale, (((yMax - yMin) * yCali)  + init.y + 30) * scale, init.z * scale],
+    anchor: [(-(scale/200)) * scale, (((yMax - yMin) * yCali) + 30) * scale, 0],
     rotation: 0,
     fontSize: scale * 8,
     align: "left",
