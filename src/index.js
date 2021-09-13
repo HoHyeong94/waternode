@@ -32,13 +32,6 @@ function WsData() {
   this.addInput("페이지번호", 0);
   this.addInput("조회시작시간", 0);
   this.addInput("조회종료시간", 0);
-  // this.addOutput("일시", 0);
-  // this.addOutput("댐수위", 0);
-  // this.addOutput("강우량", 0);
-  // this.addOutput("유입량", 0);
-  // this.addOutput("총방류량", 0);
-  // this.addOutput("저수량", 0);
-  // this.addOutput("저수율", 0);
   this.addOutput("WsData", 0);
 }
 
@@ -54,9 +47,6 @@ WsData.prototype.onExecute = async function () {
   const pageNo = this.getInputData(4) ?? "undefined";
   const stct = this.getInputData(5) ?? 0;
   const edct = this.getInputData(6) ?? 24;
-
-  // const stctIndex = stct * 6;
-  // const edctIndex = edct * 6;
 
   let wsData = {
     obsrdtmnt: [],
@@ -115,10 +105,6 @@ WsData.prototype.onExecute = async function () {
       wsData.totdcwtrqy.push(items[i].totdcwtrqy)
     }
   }
-
-  // console.log("-----data-----");
-  // console.log(data)
-  console.log(wsData);
   this.setOutputData(0, wsData);
 };
 
