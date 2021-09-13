@@ -236,8 +236,8 @@ WaterNode.prototype.onExecute = function () {
   let level = this.getInputData(0) ?? 0;
   let waterBodyMat = this.getInputData(1) ?? defaultwaterBodyMat
   let waterGroup = new THREE.Group();
-  const waterGeometry = new THREE.PlaneGeometry(1000, 1000);
-  const waterBodyGeo = new THREE.BoxGeometry(1000, 100, 1000);
+  const waterGeometry = new THREE.PlaneGeometry(500, 500);
+  const waterBodyGeo = new THREE.BoxGeometry(500, 100, 500);
 
   let water = new Water(
     waterGeometry,
