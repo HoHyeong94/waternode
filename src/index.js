@@ -10,20 +10,21 @@ import {
   Sky,
   Water,
   SetXRenv,
-  THREELINE
+  THREELINE,
 } from "global";
 import { LineSegMesh, LabelInsert } from "./lineUtils";
 
+export let koreanFont = null;
 
-export let koreanFont = null
+var gloader = new THREE.FontLoader();
 
-var gloader = new THREE.FontLoader()
-
-export default new Promise((r, j) => gloader.load('/fonts/korean.json', function (font) {
-        koreanFont = font;
-        console.log("loaded");
-        r()
-}))
+export default new Promise((r, j) =>
+  gloader.load("/fonts/korean.json", function (font) {
+    koreanFont = font;
+    console.log("loaded");
+    r();
+  })
+);
 function WsData() {
   this.addInput("댐코드", 0);
   this.addInput("조회시작일", 0);
@@ -56,7 +57,7 @@ WsData.prototype.onExecute = async function () {
     totdcwtrqy: [],
     rsvwtqy: [],
     rsvwtrt: [],
-  }
+  };
 
   let queryParams = "?";
   queryParams +=
@@ -81,28 +82,26 @@ WsData.prototype.onExecute = async function () {
 
   let items = response.data.response.body.items.item;
 
-
   if (stct > edct || stct < 0 || edct > 24) {
     for (let i in items) {
-      wsData.inflowqy.push(items[i].inflowqy)
-      wsData.lowlevel.push(items[i].lowlevel)
-      wsData.obsrdtmnt.push(items[i].obsrdtmnt)
-      wsData.rf.push(items[i].rf)
-      wsData.rsvwtqy.push(items[i].rsvwtqy)
-      wsData.rsvwtrt.push(items[i].rsvwtrt)
-      wsData.totdcwtrqy.push(items[i].totdcwtrqy)
+      wsData.inflowqy.push(items[i].inflowqy);
+      wsData.lowlevel.push(items[i].lowlevel);
+      wsData.obsrdtmnt.push(items[i].obsrdtmnt);
+      wsData.rf.push(items[i].rf);
+      wsData.rsvwtqy.push(items[i].rsvwtqy);
+      wsData.rsvwtrt.push(items[i].rsvwtrt);
+      wsData.totdcwtrqy.push(items[i].totdcwtrqy);
     }
-
   } else {
-    for (let i = stct * 6; i < edct * 6 ; i++) {
-      if (!(items[i])) continue;
-      wsData.inflowqy.push(items[i].inflowqy)
-      wsData.lowlevel.push(items[i].lowlevel)
-      wsData.obsrdtmnt.push(items[i].obsrdtmnt)
-      wsData.rf.push(items[i].rf)
-      wsData.rsvwtqy.push(items[i].rsvwtqy)
-      wsData.rsvwtrt.push(items[i].rsvwtrt)
-      wsData.totdcwtrqy.push(items[i].totdcwtrqy)
+    for (let i = stct * 6; i < edct * 6; i++) {
+      if (!items[i]) continue;
+      wsData.inflowqy.push(items[i].inflowqy);
+      wsData.lowlevel.push(items[i].lowlevel);
+      wsData.obsrdtmnt.push(items[i].obsrdtmnt);
+      wsData.rf.push(items[i].rf);
+      wsData.rsvwtqy.push(items[i].rsvwtqy);
+      wsData.rsvwtrt.push(items[i].rsvwtrt);
+      wsData.totdcwtrqy.push(items[i].totdcwtrqy);
     }
   }
   this.setOutputData(0, wsData);
@@ -113,8 +112,9 @@ WsData.title = "WsData";
 LiteGraph.registerNodeType("test/WsData", WsData);
 
 function GLTFLoaderNode() {
-  this.addInput("path", 0);
+  this.addInput("bin", 0);
   this.addOutput("model", 0);
+  this.addOutput("tmp", 0);
 }
 
 const loader = new GLTFLoader()
@@ -123,10 +123,24 @@ const loader = new GLTFLoader()
   .setMeshoptDecoder(MeshoptDecoder);
 
 GLTFLoaderNode.prototype.onExecute = async function () {
-  let url = this.getInputData(0);
+  // let _binary = this.getInputData(0);
+  // const dataURI = `data:application/glb;base64,${_binary.toString("base64")}`;
 
-  let scene2 = await new Promise((resolve) => {
-    loader.load(url, (gltf) => {
+  // let scene2 = await new Promise((resolve) => {
+  //   loader.load(dataURI, (gltf) => {
+  //     let scene = gltf.scene || gltf.scenes[0];
+  //     if (!scene) {
+  //       throw new Error(
+  //         "This model contains no scene, and cannot be viewed here. However," +
+  //           " it may contain individual 3D resources."
+  //       );
+  //     }
+  //     resolve(scene);
+  //   });
+  // });
+
+  let scene3 = await new Promise((resolve) => {
+    loader.load("../../textures/mergedDam.glb", (gltf) => {
       let scene = gltf.scene || gltf.scenes[0];
       if (!scene) {
         throw new Error(
@@ -134,12 +148,20 @@ GLTFLoaderNode.prototype.onExecute = async function () {
             " it may contain individual 3D resources."
         );
       }
+      console.log('---scene3---')
+      console.log(scene)
       resolve(scene);
     });
   });
-  scene2.scale.multiplyScalar(100000);
-  scene2.position.set(50, -650, -600);
-  this.setOutputData(0, scene2);
+  // scene2.scale.multiplyScalar(100000);
+  // scene2.position.set(50, -650, -600);
+
+  scene3.scale.multiplyScalar(100000);
+  scene3.position.set(50, -650, -600);
+
+
+  // this.setOutputData(0, scene2);
+  this.setOutputData(1, scene3);
 };
 
 GLTFLoaderNode.title = "GLTFLoaderNode";
@@ -165,7 +187,6 @@ LightNode.prototype.onExecute = function () {
   this.setOutputData(0, group);
 };
 
-
 // Expose Node
 LiteGraph.registerNodeType("test/LightNode", LightNode);
 
@@ -175,7 +196,7 @@ function SunNode() {
   this.addOutput("sun", 0);
 }
 
-SunNode.title = "SunNode"
+SunNode.title = "SunNode";
 
 SunNode.prototype.onExecute = function () {
   let elevation = this.getInputData(0) ?? 2;
@@ -185,13 +206,12 @@ SunNode.prototype.onExecute = function () {
   const theta = THREE.MathUtils.degToRad(azimuth);
 
   let sun = new THREE.Vector3();
-  
+
   sun.setFromSphericalCoords(1, phi, theta);
   this.setOutputData(0, sun);
-}
+};
 
 LiteGraph.registerNodeType("test/SunNode", SunNode);
-
 
 function SkyNode() {
   this.addInput("turbidity", 0);
@@ -213,14 +233,13 @@ SkyNode.prototype.onExecute = function () {
   sky.scale.setScalar(10000);
 
   const skyUniforms = sky.material.uniforms;
-  skyUniforms['turbidity'].value = turbidity;
-  skyUniforms['rayleigh'].value = rayleigh;
-  skyUniforms['mieCoefficient'].value = mieCoefficient;
-  skyUniforms['mieDirectionalG'].value = mieDirectionalG;
-
+  skyUniforms["turbidity"].value = turbidity;
+  skyUniforms["rayleigh"].value = rayleigh;
+  skyUniforms["mieCoefficient"].value = mieCoefficient;
+  skyUniforms["mieDirectionalG"].value = mieDirectionalG;
 
   this.setOutputData(0, sky);
-}
+};
 
 LiteGraph.registerNodeType("test/SkyNode", SkyNode);
 
@@ -234,35 +253,38 @@ WaterNode.title = "WaterNode";
 
 WaterNode.prototype.onExecute = function () {
   let level = this.getInputData(0) ?? 0;
-  let waterBodyMat = this.getInputData(1) ?? defaultwaterBodyMat
+  let waterBodyMat = this.getInputData(1) ?? defaultwaterBodyMat;
   let waterGroup = new THREE.Group();
   const waterGeometry = new THREE.PlaneGeometry(500, 500);
   const waterBodyGeo = new THREE.BoxGeometry(500, 100, 500);
 
-  let water = new Water(
-    waterGeometry,
-    {
-      textureWidth: 512,
-      textureHeight: 512,
-      waterNormals: new THREE.TextureLoader().load('https://x.nexivil.com/media/public/waternormals.jpg', function (texture) {
-
+  let water = new Water(waterGeometry, {
+    textureWidth: 512,
+    textureHeight: 512,
+    waterNormals: new THREE.TextureLoader().load(
+      "../../textures/waternormals.jpg",
+      function (texture) {
         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      }
+    ),
+    // sunDirection: new THREE.Vector3(),
+    sunDirection: new THREE.Vector3(100, 100, 100),
+    sunColor: 0xffffff,
+    waterColor: 0x001e0f,
+    distortionScale: 3.7,
+    fog: undefined,
+  });
 
-      }),
-      // sunDirection: new THREE.Vector3(),
-      sunDirection: new THREE.Vector3(100, 100, 100),
-      sunColor: 0xffffff,
-      waterColor: 0x001e0f,
-      distortionScale: 3.7,
-      fog: undefined
-    }
-  );
+  water.rotation.x = -Math.PI / 2;
+  const defaultwaterBodyMat = new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0.62,
+    color: 0x001e0f,
+    side: THREE.DoubleSide,
+  });
+  let waterBody = new THREE.Mesh(waterBodyGeo, waterBodyMat);
 
-  water.rotation.x = - Math.PI / 2;
-  const defaultwaterBodyMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.62, color: 0x001e0f, side: THREE.DoubleSide })
-  let waterBody = new THREE.Mesh(waterBodyGeo, waterBodyMat)
-
-  waterBody.position.y = -50.01
+  waterBody.position.y = -50.01;
 
   // scene.add(waterBody)
   // scene.add( water );
@@ -272,23 +294,23 @@ WaterNode.prototype.onExecute = function () {
 
   waterGroup.position.y += level;
   this.setOutputData(0, waterGroup);
-}
+};
 
 LiteGraph.registerNodeType("test/WaterNode", WaterNode);
-function SetEnvironment () {
+function SetEnvironment() {
   this.addInput("Sun", 0);
   this.addInput("Sky", 0);
   this.addInput("Water", 0);
 }
 
-SetEnvironment.title = "SetEnvironment"
+SetEnvironment.title = "SetEnvironment";
 
 SetEnvironment.prototype.onExecute = function () {
   let sun = this.getInputData(0);
   let sky = this.getInputData(1);
   let water = this.getInputData(2);
-  SetXRenv({sky, sun, water});
-}
+  SetXRenv({ sky, sun, water });
+};
 
 LiteGraph.registerNodeType("test/SetEnvironment", SetEnvironment);
 
@@ -298,8 +320,8 @@ const targetData = {
   inflowqy: "유입량",
   totdcwtrqy: "총방류량",
   rsvwtqy: "저수량",
-  rsvwtrt: "저수율"
-}
+  rsvwtrt: "저수율",
+};
 function WsGraphView() {
   this.addInput("WsData", 0);
   this.addInput("Target", 0);
@@ -312,7 +334,7 @@ WsGraphView.title = "WsGraphView";
 
 WsGraphView.prototype.onExecute = function () {
   let data = this.getInputData(0);
-  let target = this.getInputData(1) ?? "totdcwtrqy"
+  let target = this.getInputData(1) ?? "totdcwtrqy";
   let material = this.getInputData(2) ?? undefined;
   let textMat = this.getInputData(3) ?? undefined;
   let graphSet = new THREE.Group();
@@ -320,38 +342,59 @@ WsGraphView.prototype.onExecute = function () {
   let yAxios = [];
   let pts = [];
   let textList = [];
- 
+
   let yData = data[target];
-  let re = new RegExp(/,/g)
+  let re = new RegExp(/,/g);
 
   for (let i in yData) {
-    if(!(typeof yData[i] === "string")) continue;
-    yData[i] = parseFloat(yData[i].replace(re, ''));
+    if (!(typeof yData[i] === "string")) continue;
+    yData[i] = parseFloat(yData[i].replace(re, ""));
   }
 
-  let yMax = Math.max.apply(null, yData)
-  let yMin = Math.min.apply(null, yData)
+  let yMax = Math.max.apply(null, yData);
+  let yMin = Math.min.apply(null, yData);
   let scale = 1000;
   // let init = {x:0, y:0, z:0}
   // const xAxiosLength = data.obsrdtmnt.length;
   const xAxiosLength = 144;
-  let yCali = xAxiosLength / (yMax - yMin)
+  let yCali = xAxiosLength / (yMax - yMin);
   let _lineSeg = [];
   let _lineXaxios = [];
   let _lineYaxios = [];
   let _xMarkLine = [];
   let _yMarkLine = [];
 
-  yAxios.push(...[new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, (((yMax - yMin) * yCali)) * scale, 0)]);
-  xAxios.push(...[new THREE.Vector3(0, 0, 0), new THREE.Vector3((xAxiosLength) * scale, 0, 0)]);
+  yAxios.push(
+    ...[
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0, (yMax - yMin) * yCali * scale, 0),
+    ]
+  );
+  xAxios.push(
+    ...[
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(xAxiosLength * scale, 0, 0),
+    ]
+  );
 
-  let backgroudMeshPos = [(xAxiosLength * scale) / 2, ((yMax - yMin) * yCali * scale) / 2, 0];
+  let backgroudMeshPos = [
+    (xAxiosLength * scale) / 2,
+    ((yMax - yMin) * yCali * scale) / 2,
+    0,
+  ];
 
-  for(let i = 0; i < xAxiosLength + 1; i++) {
-    pts.push(new THREE.Vector3(i * scale, (((yData[Math.round((data.obsrdtmnt.length / xAxiosLength) * i)] - yMin) * yCali)) * scale, 0));
+  for (let i = 0; i < xAxiosLength + 1; i++) {
+    pts.push(
+      new THREE.Vector3(
+        i * scale,
+        (yData[Math.round((data.obsrdtmnt.length / xAxiosLength) * i)] - yMin) *
+          yCali *
+          scale,
+        0
+      )
+    );
   }
 
-  
   pts.reduce((re, cu) => {
     _lineSeg.push(re, cu);
     return cu;
@@ -364,8 +407,7 @@ WsGraphView.prototype.onExecute = function () {
     _lineXaxios.push(re, cu);
     return cu;
   });
-  
-  
+
   let _result = LineSegMesh(_lineSeg, material);
   let _resultX = LineSegMesh(_lineXaxios, material);
   let _resultY = LineSegMesh(_lineYaxios, material);
@@ -374,16 +416,27 @@ WsGraphView.prototype.onExecute = function () {
     let xMarkLine = [];
     let yMarkLine = [];
     let Ytext = (yMin + ((yMax - yMin) / 6) * i).toFixed(2);
-    let Yanchor = [-(scale / 200) * scale, (((yMax - yMin) * yCali) / 6) * i * scale, 0]; 
+    let Yanchor = [
+      -(scale / 200) * scale,
+      (((yMax - yMin) * yCali) / 6) * i * scale,
+      0,
+    ];
     textList.push({
-        text: Ytext.toString(),
-        anchor: Yanchor,
-        rotation: 0,
-        fontSize: scale * 5,
-        align: "right",
-    })
+      text: Ytext.toString(),
+      anchor: Yanchor,
+      rotation: 0,
+      fontSize: scale * 5,
+      align: "right",
+    });
 
-    yMarkLine.push(new THREE.Vector3(0, ( (((yMax - yMin) * yCali) / 6) * i ) * scale, 0), new THREE.Vector3(-(scale/200) * scale, ((((yMax - yMin) * yCali) / 6) * i) * scale, 0) )
+    yMarkLine.push(
+      new THREE.Vector3(0, (((yMax - yMin) * yCali) / 6) * i * scale, 0),
+      new THREE.Vector3(
+        -(scale / 200) * scale,
+        (((yMax - yMin) * yCali) / 6) * i * scale,
+        0
+      )
+    );
     yMarkLine.reduce((re, cu, idx) => {
       _yMarkLine.push(re, cu);
       return cu;
@@ -393,9 +446,17 @@ WsGraphView.prototype.onExecute = function () {
     graphSet.add(_resultYmark);
 
     if (!(i === 0)) {
-      let Xtext = data.obsrdtmnt[Math.round((data.obsrdtmnt.length / 6)) * i - 1].slice(6)
-      let Xanchor = [(xAxiosLength / 6 * i) * scale, -(scale/200) * scale, 0]
-      xMarkLine.push(new THREE.Vector3((xAxiosLength / 6 * i) * scale, 0, 0), new THREE.Vector3((xAxiosLength / 6 * i) * scale, - (scale/200) * scale, 0))
+      let Xtext =
+        data.obsrdtmnt[Math.round(data.obsrdtmnt.length / 6) * i - 1].slice(6);
+      let Xanchor = [(xAxiosLength / 6) * i * scale, -(scale / 200) * scale, 0];
+      xMarkLine.push(
+        new THREE.Vector3((xAxiosLength / 6) * i * scale, 0, 0),
+        new THREE.Vector3(
+          (xAxiosLength / 6) * i * scale,
+          -(scale / 200) * scale,
+          0
+        )
+      );
       xMarkLine.reduce((re, cu, idx) => {
         _xMarkLine.push(re, cu);
         return cu;
@@ -408,45 +469,52 @@ WsGraphView.prototype.onExecute = function () {
         rotation: 0,
         fontSize: scale * 3,
         align: "center",
-      })
+      });
     }
   }
 
   textList.push({
-    text: `${data.obsrdtmnt[0].slice(0,5)} 댐 ${targetData[target]}`,
-    anchor: [(-(scale/200)) * scale, (((yMax - yMin) * yCali) + 30) * scale, 0],
+    text: `${data.obsrdtmnt[0].slice(0, 5)} 댐 ${targetData[target]}`,
+    anchor: [-(scale / 200) * scale, ((yMax - yMin) * yCali + 30) * scale, 0],
     rotation: 0,
     fontSize: scale * 8,
     align: "left",
-  })
+  });
 
   const backgroundMat = new THREE.MeshLambertMaterial({
-    color:0xffffff,
+    color: 0xffffff,
     transparent: true,
     opacity: 0.7,
-    roughness:0.8,
-    metalness:1,
-    side: THREE.DoubleSide
-    });
-  let backgroundMesh = new THREE.Mesh(new THREE.PlaneGeometry(200 * scale, 225 * scale), backgroundMat);
-  backgroundMesh.position.set(backgroudMeshPos[0], backgroudMeshPos[1], backgroudMeshPos[2] - 100);
+    roughness: 0.8,
+    metalness: 1,
+    side: THREE.DoubleSide,
+  });
+  let backgroundMesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(200 * scale, 225 * scale),
+    backgroundMat
+  );
+  backgroundMesh.position.set(
+    backgroudMeshPos[0],
+    backgroudMeshPos[1],
+    backgroudMeshPos[2] - 100
+  );
 
   graphSet.add(LabelInsert(textList, textMat));
-  graphSet.add(_result)
-  graphSet.add(_resultX)
+  graphSet.add(_result);
+  graphSet.add(_resultX);
   graphSet.add(_resultY);
-  graphSet.add(backgroundMesh)
+  graphSet.add(backgroundMesh);
 
   graphSet.userData = {
     key: targetData[target],
     part: "수자원공사",
-    name: "graph"
-  }
+    name: "graph",
+  };
 
-  graphSet.name = "graph"
+  graphSet.name = "graph";
 
-  this.setOutputData(0, graphSet)
-}
+  this.setOutputData(0, graphSet);
+};
 
 LiteGraph.registerNodeType("test/WsGraphView", WsGraphView);
 
@@ -461,14 +529,14 @@ setWorldGraph.title = "setWorldGraph";
 
 setWorldGraph.prototype.onExecute = function () {
   let graph = this.getInputData(0) ?? null;
-  let position = this.getInputData(1) ?? {x:0, y:0, z:0};
+  let position = this.getInputData(1) ?? { x: 0, y: 0, z: 0 };
   let scale = this.getInputData(2) ?? 1;
 
-  graph.scale.set(scale, scale, scale)
-  graph.position.set(position.x, position.y, position.z)
+  graph.scale.set(scale, scale, scale);
+  graph.position.set(position.x, position.y, position.z);
   // graph.lookAt(0,0,0)
-  
+
   this.setOutputData(0, graph);
-}
+};
 
 LiteGraph.registerNodeType("test/setWorldGraph", setWorldGraph);
