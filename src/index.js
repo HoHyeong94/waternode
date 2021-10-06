@@ -5,12 +5,11 @@ import {
   DRACOLoader,
   MeshoptDecoder,
   axios,
-  sceneAdder,
   THREE,
   Sky,
   Water,
   SetXRenv,
-  THREELINE,
+  _
 } from "global";
 import { LineSegMesh, LabelInsert } from "./lineUtils";
 
@@ -113,8 +112,8 @@ LiteGraph.registerNodeType("test/WsData", WsData);
 
 function GLTFLoaderNode() {
   this.addInput("bin", 0);
-  this.addOutput("model", 0);
-  this.addOutput("tmp", 0);
+  this.addOutput("server", 0);
+  this.addOutput("local", 0);
 }
 
 const loader = new GLTFLoader()
@@ -123,8 +122,22 @@ const loader = new GLTFLoader()
   .setMeshoptDecoder(MeshoptDecoder);
 
 GLTFLoaderNode.prototype.onExecute = async function () {
-  // let _binary = this.getInputData(0);
+  let _binary = this.getInputData(0);
   // const dataURI = `data:application/glb;base64,${_binary.toString("base64")}`;
+
+  
+  let scene1 = await new Promise((resolve) => {
+    loader.load(_binary, (gltf) => {
+      let scene = gltf.scene || gltf.scenes[0];
+      if (!scene) {
+        throw new Error(
+          "This model contains no scene, and cannot be viewed here. However," +
+            " it may contain individual 3D resources."
+        );
+      }
+      resolve(scene);
+    });
+  });
 
   // let scene2 = await new Promise((resolve) => {
   //   loader.load(dataURI, (gltf) => {
@@ -148,11 +161,15 @@ GLTFLoaderNode.prototype.onExecute = async function () {
             " it may contain individual 3D resources."
         );
       }
-      console.log('---scene3---')
-      console.log(scene)
+      // console.log('---scene3---')
+      // console.log(scene)
       resolve(scene);
     });
   });
+
+  scene1.scale.multiplyScalar(100000);
+  scene1.position.set(50, -650, -600);
+
   // scene2.scale.multiplyScalar(100000);
   // scene2.position.set(50, -650, -600);
 
@@ -160,7 +177,7 @@ GLTFLoaderNode.prototype.onExecute = async function () {
   scene3.position.set(50, -650, -600);
 
 
-  // this.setOutputData(0, scene2);
+  this.setOutputData(0, scene1);
   this.setOutputData(1, scene3);
 };
 
@@ -315,12 +332,12 @@ SetEnvironment.prototype.onExecute = function () {
 LiteGraph.registerNodeType("test/SetEnvironment", SetEnvironment);
 
 const targetData = {
-  lowlevel: "댐수위",
-  rf: "강우량",
-  inflowqy: "유입량",
-  totdcwtrqy: "총방류량",
-  rsvwtqy: "저수량",
-  rsvwtrt: "저수율",
+  lowlevel: "댐수위(ELm)",
+  rf: "강우량(mm)",
+  inflowqy: "유입량(m³/sec)",
+  totdcwtrqy: "총방류량(m³/sec)",
+  rsvwtqy: "저수량(백만m³)",
+  rsvwtrt: "저수율(%)",
 };
 function WsGraphView() {
   this.addInput("WsData", 0);
@@ -474,7 +491,7 @@ WsGraphView.prototype.onExecute = function () {
   }
 
   textList.push({
-    text: `${data.obsrdtmnt[0].slice(0, 5)} 댐 ${targetData[target]}`,
+    text: `${data.obsrdtmnt[0].slice(0, 5)} ${targetData[target]} `,
     anchor: [-(scale / 200) * scale, ((yMax - yMin) * yCali + 30) * scale, 0],
     rotation: 0,
     fontSize: scale * 8,
@@ -540,3 +557,40 @@ setWorldGraph.prototype.onExecute = function () {
 };
 
 LiteGraph.registerNodeType("test/setWorldGraph", setWorldGraph);
+
+
+function waterAnimate() {
+  this.addOutput("", 0);
+}
+
+waterAnimate.title = "waterAnimate";
+
+waterAnimate.prototype.onExecute = function () {
+  function waterAnimate(scene, camera, waterMat) {
+    if (!!waterMat) waterMat.uniforms["time"].value += 1.0 / 60.0;
+  }
+
+  this.setOutputData(0, waterAnimate);
+}
+
+LiteGraph.registerNodeType("test/waterAnimate", waterAnimate);
+
+function setGraphDirectionToUser() {
+  this.addOutput("", 0);
+}
+
+setGraphDirectionToUser.title = "setGraphDirectionToUser";
+
+setGraphDirectionToUser.prototype.onExecute = function () {
+  const graphsLookAt = _.throttle((scene, camera) => {
+    scene.traverse((obj) => {
+      if (obj.name === "graph") {
+        obj.lookAt(camera.position);
+      }
+    });
+  }, 2500);
+
+  this.setOutputData(0, graphsLookAt);
+};
+
+LiteGraph.registerNodeType("test/setGraphDirectionToUser", setGraphDirectionToUser);
