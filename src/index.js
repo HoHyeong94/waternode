@@ -8,6 +8,7 @@ import {
   THREE,
   Sky,
   Water,
+  // Water2,
   SetXRenv,
   _
 } from "global";
@@ -260,6 +261,12 @@ SkyNode.prototype.onExecute = function () {
 
 LiteGraph.registerNodeType("test/SkyNode", SkyNode);
 
+const defaultwaterBodyMat = new THREE.MeshBasicMaterial({
+  transparent: true,
+  opacity: 0.62,
+  color: 0x001e0f,
+  side: THREE.DoubleSide,
+});
 function WaterNode() {
   this.addInput("level", 0);
   this.addInput("material", 0);
@@ -293,12 +300,7 @@ WaterNode.prototype.onExecute = function () {
   });
 
   water.rotation.x = -Math.PI / 2;
-  const defaultwaterBodyMat = new THREE.MeshBasicMaterial({
-    transparent: true,
-    opacity: 0.62,
-    color: 0x001e0f,
-    side: THREE.DoubleSide,
-  });
+
   let waterBody = new THREE.Mesh(waterBodyGeo, waterBodyMat);
 
   waterBody.position.y = -50.01;
@@ -314,6 +316,55 @@ WaterNode.prototype.onExecute = function () {
 };
 
 LiteGraph.registerNodeType("test/WaterNode", WaterNode);
+
+// function Water2Node() {
+//   this.addInput("level", 0);
+//   // this.addInput("material", 0);
+//   this.addOutput("water", 0);
+// }
+
+// Water2Node.title = "Water2Node";
+
+// Water2Node.prototype.onExecute = function () {
+//   let level = this.getInputData(0) ?? 0;
+//   let waterBodyMat = new THREE.MeshBasicMaterial({
+//     transparent: true,
+//     opacity: 0.62,
+//     color: 0x001e0f,
+//     side: THREE.DoubleSide,
+//   });
+//   let waterGroup = new THREE.Group();
+
+//   const waterGeometry = new THREE.PlaneGeometry(500, 500);
+//   const waterBodyGeo = new THREE.BoxGeometry(500, 100, 500);
+
+//   let waterBody = new THREE.Mesh(waterBodyGeo, waterBodyMat);
+
+//   waterBody.position.y = -50.01;
+
+
+//   // let water2 = new Water2( waterGeometry, {
+//   //   color: "#ffffff",
+//   //   scale: 4,
+//   //   flowDirection: new THREE.Vector2(1, 1),
+//   //   textureWidth: 1024,
+// 	// 	textureHeight: 1024
+//   // } )
+
+//   // water2.position.y = 1;
+//   // water2.rotation.x = -Math.PI / 2;
+//   // waterBody.rotation.x = Math.PI ;
+
+
+//   // waterGroup.add(water2);
+//   waterGroup.add(waterBody);
+
+//   waterGroup.position.y += level;
+  
+//   this.setOutputData(0, waterGroup);
+// }
+// LiteGraph.registerNodeType("test/Water2Node", Water2Node);
+
 function SetEnvironment() {
   this.addInput("Sun", 0);
   this.addInput("Sky", 0);
