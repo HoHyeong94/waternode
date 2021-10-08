@@ -114,7 +114,6 @@ LiteGraph.registerNodeType("test/WsData", WsData);
 function GLTFLoaderNode() {
   this.addInput("bin", 0);
   this.addOutput("server", 0);
-  this.addOutput("local", 0);
 }
 
 const loader = new GLTFLoader()
