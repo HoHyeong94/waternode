@@ -153,20 +153,20 @@ GLTFLoaderNode.prototype.onExecute = async function () {
   //   });
   // });
 
-  let scene3 = await new Promise((resolve) => {
-    loader.load("../../textures/mergedDam.glb", (gltf) => {
-      let scene = gltf.scene || gltf.scenes[0];
-      if (!scene) {
-        throw new Error(
-          "This model contains no scene, and cannot be viewed here. However," +
-            " it may contain individual 3D resources."
-        );
-      }
-      // console.log('---scene3---')
-      // console.log(scene)
-      resolve(scene);
-    });
-  });
+  // let scene3 = await new Promise((resolve) => {
+  //   loader.load("../../textures/mergedDam.glb", (gltf) => {
+  //     let scene = gltf.scene || gltf.scenes[0];
+  //     if (!scene) {
+  //       throw new Error(
+  //         "This model contains no scene, and cannot be viewed here. However," +
+  //           " it may contain individual 3D resources."
+  //       );
+  //     }
+  //     // console.log('---scene3---')
+  //     // console.log(scene)
+  //     resolve(scene);
+  //   });
+  // });
 
   scene1.scale.multiplyScalar(100000);
   scene1.position.set(50, -650, -600);
@@ -174,12 +174,10 @@ GLTFLoaderNode.prototype.onExecute = async function () {
   // scene2.scale.multiplyScalar(100000);
   // scene2.position.set(50, -650, -600);
 
-  scene3.scale.multiplyScalar(100000);
-  scene3.position.set(50, -650, -600);
-
+  // scene3.scale.multiplyScalar(100000);
+  // scene3.position.set(50, -650, -600);
 
   this.setOutputData(0, scene1);
-  this.setOutputData(1, scene3);
 };
 
 GLTFLoaderNode.title = "GLTFLoaderNode";
